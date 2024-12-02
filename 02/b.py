@@ -11,18 +11,15 @@ def is_safe(row: list[int]) -> bool:
     return (all_increasing or all_decreasing) and not too_much
 
 
-def pluck_value(row: list[int], index: int) -> list[int]:
+def remove_index(row: list[int], index: int) -> list[int]:
     return [x for i, x in enumerate(row) if i != index]
 
 def is_safe_off_by_one(row: list[int]) -> bool:
-    remove_index = 0
-    row_to_test = row
-
-    while (invalid := not is_safe(row_to_test)) and remove_index < len(row):
-        row_to_test = pluck_value(row, index=remove_index)
-        remove_index += 1
-
-    return not invalid
+    for index in range(len(row)):
+        modified_row = remove_index(row, index=index)
+        if is_safe(modified_row):
+            return True
+    return False
 
 
 def solve(matrix: list[list[int]]) -> int:
