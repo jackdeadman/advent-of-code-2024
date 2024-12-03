@@ -1,14 +1,13 @@
 import re
 from pathlib import Path
-from typing import Generator
+from typing import Generator, Iterator
 
 from common import read_input
 
 MUL_PATTERN = re.compile(r'mul\(([0-9]{1,3}),([0-9]{1,3})\)|don\'t\(\)|do\(\)')
 
-def find_matches(input_string: str) -> Generator[re.Match, None, None]:
-    for match in MUL_PATTERN.finditer(input_string):
-        yield match
+def find_matches(input_string: str) -> Iterator[re.Match]:
+    return MUL_PATTERN.finditer(input_string)
 
 
 def find_mul_operands(input_string: str) -> Generator[tuple[int, int], None, None]:
