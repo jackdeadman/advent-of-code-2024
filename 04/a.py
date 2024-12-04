@@ -8,26 +8,26 @@ DIRECTIONS = list(map(
 ))
 
 
-def count_words(matrix: list[list[str]], position: Position, movement: Position, word: str) -> int:
+def has_word(matrix: list[list[str]], position: Position, movement: Position, word: str) -> bool:
     if not position.on_grid(matrix):
-        return 0
+        return False
 
     current_letter = matrix[position.i][position.j]
 
     if current_letter != word[0]:
-        return 0
+        return False
 
     if word == current_letter:
-        return 1
+        return True
 
-    return count_words(matrix,
+    return has_word(matrix,
                        position=position + movement,
                        movement=movement,
                        word=word[1:])
 
 
 def count_words_from_start(matrix: list[list[str]], start: Position, word: str) -> int:
-    return sum(count_words(matrix, position=start, movement=d, word=word) for d in DIRECTIONS)
+    return sum(has_word(matrix, position=start, movement=d, word=word) for d in DIRECTIONS)
 
 
 def solve(matrix: list[list[str]]) -> int:
