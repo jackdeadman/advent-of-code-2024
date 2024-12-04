@@ -28,13 +28,13 @@ def make_templates(x: str) -> list[list[list[str]]]:
         return kernel
 
     base = __make_template(x)
-    base_reflection = __make_template(x[::-1])
+    base_reversed = __make_template(x[::-1])
 
     templates = [
         base,
-        base_reflection,
+        base_reversed,
         reflect(base),
-        reflect(base_reflection),
+        reflect(base_reversed),
     ]
 
     return templates
