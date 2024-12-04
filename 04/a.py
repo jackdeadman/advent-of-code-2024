@@ -7,9 +7,6 @@ DIRECTIONS = list(map(
     [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)]
 ))
 
-def on_grid(matrix: list[list[str]], position: Position) -> bool:
-    i, j = position
-    return 0 <= i < len(matrix) and 0 <= j < len(matrix[i])
 
 def count_words(matrix: list[list[str]], position: Position, movement: Position, word: str) -> int:
     if not position.on_grid(matrix):
