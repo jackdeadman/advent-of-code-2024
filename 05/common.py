@@ -3,7 +3,6 @@ from pathlib import Path
 from collections import defaultdict
 from typing import TypeVar, Optional
 
-T = TypeVar('T')
 AdjacencyList = dict[int, list[int]]
 
 
@@ -13,9 +12,9 @@ def topological_sort(adjacency_list: AdjacencyList) -> list[int]:
 
     def _dfs(node: int):
         visited.add(node)
-        for neighbor in adjacency_list.get(node, []):
-            if neighbor not in visited:
-                _dfs(neighbor)
+        for neighbour in adjacency_list.get(node, []):
+            if neighbour not in visited:
+                _dfs(neighbour)
         stack.append(node)
 
     for n in adjacency_list:
