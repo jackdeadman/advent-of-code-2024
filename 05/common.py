@@ -1,7 +1,7 @@
 import functools
 from pathlib import Path
 from collections import defaultdict
-from typing import TypeVar, Optional
+from typing import Optional
 
 AdjacencyList = dict[int, list[int]]
 
