@@ -11,16 +11,16 @@ def topological_sort(adjacency_list: AdjacencyList) -> list[int]:
     visited = set()
     stack = []
 
-    def __dfs(node: int):
+    def _dfs(node: int):
         visited.add(node)
         for neighbor in adjacency_list.get(node, []):
             if neighbor not in visited:
-                __dfs(neighbor)
+                _dfs(neighbor)
         stack.append(node)
 
     for n in adjacency_list:
         if n not in visited:
-            __dfs(n)
+            _dfs(n)
 
     return stack[::-1]
 
