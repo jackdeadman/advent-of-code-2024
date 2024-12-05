@@ -29,9 +29,9 @@ def get_sub_graph(graph: AdjacencyList, update: list[int]) -> AdjacencyList:
     sub_graph = defaultdict(list)
 
     for key in update:
-            for value in graph[key]:
-                if value in update:
-                    sub_graph[key].append(value)
+        for value in graph[key]:
+            if value in update:
+                sub_graph[key].append(value)
     return sub_graph
 
 def sort_update(graph: AdjacencyList, update: list[int], follow_transitive_edges: Optional[bool] = True) -> list[int]:
