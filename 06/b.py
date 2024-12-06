@@ -6,7 +6,7 @@ import logging
 
 # Make these optional deps as they are not required for the solution and I want to avoid using deps for the challenges.
 # But they are useful for speeding up the solution and displaying the progress.
-# Takes around 13s on Apple M1 Pro
+# Takes around 12s on Apple M1 Pro
 try:
     from joblib import Parallel, delayed
     has_parallel = True
@@ -21,7 +21,7 @@ except ImportError:
     has_tqdm = False
     logging.warning('tqdm not installed, progress will not be displayed. Install optional dependencies for progress bars.')
 
-def simulation_terminates(player: Player, grid: Grid) -> bool:
+def simulation_terminates(player: Player, grid: Grid, retroencabulator_position: Position) -> bool:
     rows, cols = grid.rows, grid.cols
 
     masks = [1 << d.value for d in Direction]
@@ -29,7 +29,7 @@ def simulation_terminates(player: Player, grid: Grid) -> bool:
     # Keep track of visited cells and directions
     configs = [[0 for _ in range(cols)] for _ in range(rows)]
 
-    while player.simulate(grid):
+    while player.simulate(grid, additional_position=retroencabulator_position):
         mask = masks[player.direction.value]
         if configs[player.position.i][player.position.j] & mask:
             return False
@@ -41,12 +41,11 @@ def simulation_terminates(player: Player, grid: Grid) -> bool:
 def solve(initial_pos: Position, grid: Grid) -> int:
 
     def _solve_individual(retroencabulator_position: Position) -> bool:
-        new_grid = copy.deepcopy(grid)
         direction_cycle = iter(Direction.cycle(Direction.NORTH))
         player = Player(initial_pos, direction=next(direction_cycle))
 
-        new_grid[retroencabulator_position] = Obstacle.OBJECT.value
-        terminates = simulation_terminates(player, new_grid)
+        terminates = simulation_terminates(player, grid,
+                                           retroencabulator_position=retroencabulator_position)
 
         return not terminates
 

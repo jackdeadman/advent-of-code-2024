@@ -117,14 +117,13 @@ class Player:
 
     def move(self) -> None:
         self.position = self.next_position
-        # self.position += self.direction.vector
 
-    def simulate(self, grid: Grid) -> bool:
+    def simulate(self, grid: Grid, additional_position: Optional[Position] = None) -> bool:
         if grid.in_bounds(self.next_position):
-            if grid[self.next_position] == Obstacle.OBJECT.value:
-                self.direction = next(self._direction_cycle)
 
-            if grid[self.next_position] != Obstacle.OBJECT.value:
+            if grid[self.next_position] == Obstacle.OBJECT.value or self.next_position == additional_position:
+                self.direction = next(self._direction_cycle)
+            else:
                 self.move()
             return True
         return False
