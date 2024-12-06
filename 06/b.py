@@ -1,4 +1,3 @@
-import copy
 from pathlib import Path
 
 from common import read_input, Position, Grid, Direction, Player, Obstacle, simulate_movement_trail
