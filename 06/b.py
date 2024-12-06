@@ -6,7 +6,7 @@ import logging
 
 # Make these optional deps as they are not required for the solution and I want to avoid using deps for the challenges.
 # But they are useful for speeding up the solution and displaying the progress.
-# Takes around 17s on Apple M1 Pro
+# Takes around 13s on Apple M1 Pro
 try:
     from joblib import Parallel, delayed
     has_parallel = True
@@ -24,16 +24,16 @@ except ImportError:
 def simulation_terminates(player: Player, grid: Grid) -> bool:
     rows, cols = grid.rows, grid.cols
 
+    masks = [1 << d.value for d in Direction]
+
     # Keep track of visited cells and directions
-    configs = [[set() for _ in range(cols)] for _ in range(rows)]
+    configs = [[0 for _ in range(cols)] for _ in range(rows)]
 
     while player.simulate(grid):
-        config = (player.position, player.direction)
-        cell = configs[player.position.i][player.position.j]
-        # If we have visited this cell with the same direction, we are in a loop
-        if config in cell:
+        mask = masks[player.direction.value]
+        if configs[player.position.i][player.position.j] & mask:
             return False
-        cell.add(config)
+        configs[player.position.i][player.position.j] |= mask
 
     return True
 
