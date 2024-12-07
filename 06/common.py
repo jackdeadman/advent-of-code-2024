@@ -23,6 +23,26 @@ class Position:
     def __add__(self, other):
         return Position(self.i + other.i, self.j + other.j)
 
+@dataclass
+class MutablePosition:
+
+    i: int
+    j: int
+
+    def __add__(self, other):
+        return MutablePosition(self.i + other.i, self.j + other.j)
+
+    def __iadd__(self, other):
+        self.i += other.i
+        self.j += other.j
+        return self
+
+    def __eq__(self, other):
+        return self.i == other.i and self.j == other.j
+
+    def frozen(self):
+        return Position(self.i, self.j)
+
 
 @dataclass(frozen=True)
 class Grid:
@@ -47,7 +67,8 @@ class Grid:
         self.grid[pos.i][pos.j] = value
 
     def in_bounds(self, pos: Position) -> bool:
-        return 0 <= pos.i < self.rows and 0 <= pos.j < self.cols
+        return self[pos] != Obstacle.OOB.value
+        # return 0 <= pos.i < self.rows and 0 <= pos.j < self.cols
 
     def display(self, player_pos: Optional[Position] = None, include_trail: bool = False) -> None:
         trail = None
@@ -95,7 +116,7 @@ class Direction(Enum):
 
 @dataclass
 class Player:
-    position: Position
+    position: MutablePosition
     direction: Direction
 
     _direction_cycle: Iterable[Direction] = field(init=False, repr=False)
@@ -111,6 +132,7 @@ class Player:
 
     def move(self) -> None:
         self.position = self.next_position
+        # self.position += self.direction.vector
 
     def simulate(self, grid: Grid, additional_position: Optional[Position] = None) -> bool:
         next_position = self.next_position
@@ -135,6 +157,17 @@ def simulate_movement_trail(player_pos: Position, grid: Grid) -> set[Position]:
 
     return visited_positions
 
+def pad_grid(grid: Grid) -> Grid:
+    rows, cols = grid.rows, grid.cols
+
+    new_grid = [[Obstacle.OOB.value for _ in range(cols + 2)] for _ in range(rows + 2)]
+
+    for i in range(rows):
+        for j in range(cols):
+            new_grid[i + 1][j + 1] = grid[Position(i, j)]
+
+    return Grid(new_grid)
+
 
 def read_input(input_file: Path) -> tuple[Position, Grid]:
     grid = []
@@ -158,7 +191,12 @@ def read_input(input_file: Path) -> tuple[Position, Grid]:
     if player_pos is None:
         raise ValueError('No player position found')
 
-    return player_pos, Grid(grid)
+    grid = pad_grid(Grid(grid))
+
+    # Adjust player position to account for padding
+    player_pos = Position(player_pos.i + 1, player_pos.j + 1)
+
+    return player_pos, grid
 
 
 

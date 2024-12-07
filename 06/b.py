@@ -1,14 +1,14 @@
 from pathlib import Path
 
-from common import read_input, Position, Grid, Direction, Player, Obstacle, simulate_movement_trail
+from common import read_input, Position, Grid, Direction, Player, Obstacle, simulate_movement_trail, MutablePosition
 import logging
 
 # Make these optional deps as they are not required for the solution and I want to avoid using deps for the challenges.
 # But they are useful for speeding up the solution and displaying the progress.
-# Takes around 7s on Apple M1 Pro
+# Takes around 5s on Apple M1 Pro
 try:
     from joblib import Parallel, delayed
-    has_parallel = False
+    has_parallel = True
 except ImportError:
     has_parallel = False
     logging.warning('joblib not installed, running in serial mode. Install optional dependencies for faster execution.')
@@ -41,7 +41,11 @@ def solve(initial_pos: Position, grid: Grid) -> int:
 
     def _solve_individual(retroencabulator_position: Position) -> bool:
         direction_cycle = iter(Direction.cycle(Direction.NORTH))
-        player = Player(initial_pos, direction=next(direction_cycle))
+
+        player = Player(
+            MutablePosition(initial_pos.i, initial_pos.j),
+            direction=next(direction_cycle)
+        )
 
         terminates = simulation_terminates(player, grid,
                                            retroencabulator_position=retroencabulator_position)
