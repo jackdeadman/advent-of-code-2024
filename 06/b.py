@@ -5,10 +5,10 @@ import logging
 
 # Make these optional deps as they are not required for the solution and I want to avoid using deps for the challenges.
 # But they are useful for speeding up the solution and displaying the progress.
-# Takes around 12s on Apple M1 Pro
+# Takes around 7s on Apple M1 Pro
 try:
     from joblib import Parallel, delayed
-    has_parallel = True
+    has_parallel = False
 except ImportError:
     has_parallel = False
     logging.warning('joblib not installed, running in serial mode. Install optional dependencies for faster execution.')

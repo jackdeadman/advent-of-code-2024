@@ -24,12 +24,6 @@ class Position:
         return Position(self.i + other.i, self.j + other.j)
 
 
-    def __iadd__(self, other):
-        self.i += other.i
-        self.j += other.j
-        return self
-
-
 @dataclass(frozen=True)
 class Grid:
     grid: list[list[str]]
@@ -119,9 +113,11 @@ class Player:
         self.position = self.next_position
 
     def simulate(self, grid: Grid, additional_position: Optional[Position] = None) -> bool:
-        if grid.in_bounds(self.next_position):
+        next_position = self.next_position
 
-            if grid[self.next_position] == Obstacle.OBJECT.value or self.next_position == additional_position:
+        if grid.in_bounds(next_position):
+
+            if grid[next_position] == Obstacle.OBJECT.value or next_position == additional_position:
                 self.direction = next(self._direction_cycle)
             else:
                 self.move()
