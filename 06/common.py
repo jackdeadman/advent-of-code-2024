@@ -146,13 +146,19 @@ class Player:
         return False
 
 
-def simulate_movement_trail(player_pos: Position, grid: Grid) -> set[Position]:
+def simulate_movement_trail(player_pos: Position, grid: Grid) -> dict[Position, tuple[Position, Direction]]:
     direction_cycle = iter(Direction.cycle(Direction.NORTH))
     player = Player(player_pos, direction=next(direction_cycle))
-    visited_positions = {player.position}
+
+    prev_position = player.position
+    prev_direction = player.direction
+    visited_positions = {player.position: (prev_position, prev_direction)}
 
     while player.simulate(grid):
-        visited_positions.add(player.position)
+        if player.position not in visited_positions:
+            visited_positions[player.position] = (prev_position, prev_direction)
+        prev_position = player.position
+        prev_direction = player.direction
 
     return visited_positions
 
