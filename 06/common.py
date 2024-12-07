@@ -131,8 +131,7 @@ class Player:
         return self.position + self.direction.vector
 
     def move(self) -> None:
-        self.position = self.next_position
-        # self.position += self.direction.vector
+        self.position += self.direction.vector
 
     def simulate(self, grid: Grid, additional_position: Optional[Position] = None) -> bool:
         next_position = self.next_position

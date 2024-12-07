@@ -27,12 +27,15 @@ def simulation_terminates(player: Player, grid: Grid, retroencabulator_position:
 
     # Keep track of visited cells and directions
     configs = [[0 for _ in range(cols)] for _ in range(rows)]
-
+    prev_direction = player.direction
     while player.simulate(grid, additional_position=retroencabulator_position):
-        mask = masks[player.direction.value]
-        if configs[player.position.i][player.position.j] & mask:
-            return False
-        configs[player.position.i][player.position.j] |= mask
+        # Only need to check if the direction changes
+        if prev_direction != player.direction:
+            mask = masks[player.direction.value]
+            if configs[player.position.i][player.position.j] & mask:
+                return False
+            configs[player.position.i][player.position.j] |= mask
+        prev_direction = player.direction
 
     return True
 
