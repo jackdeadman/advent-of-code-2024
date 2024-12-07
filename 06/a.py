@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from common import read_input, Position, Grid, simulate_movement_trail
+from common import read_input, Grid, simulate_movement_trail
 
-def solve(player_pos: Position, grid: Grid) -> int:
+def solve(player_pos: complex, grid: Grid) -> int:
     return len(simulate_movement_trail(player_pos, grid))
 
 

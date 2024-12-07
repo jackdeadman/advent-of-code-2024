@@ -1,48 +1,19 @@
 import functools
+import math
 from functools import cached_property
+from numbers import Complex
 from pathlib import Path
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional, Iterable
 
 
+DirectionType = complex
+
 class Obstacle(Enum):
     OBJECT = '#'
     OPEN = '.'
     OOB = 'O'
-
-@dataclass(frozen=True)
-class Position:
-    i: int
-    j: int
-
-    @property
-    def pair(self) -> tuple[int, int]:
-        return self.i, self.j
-
-    def __add__(self, other):
-        return Position(self.i + other.i, self.j + other.j)
-
-@dataclass
-class MutablePosition:
-
-    i: int
-    j: int
-
-    def __add__(self, other):
-        return MutablePosition(self.i + other.i, self.j + other.j)
-
-    def __iadd__(self, other):
-        self.i += other.i
-        self.j += other.j
-        return self
-
-    def __eq__(self, other):
-        return self.i == other.i and self.j == other.j
-
-    def frozen(self):
-        return Position(self.i, self.j)
-
 
 @dataclass(frozen=True)
 class Grid:
@@ -60,17 +31,16 @@ class Grid:
     def size(self) -> int:
         return self.rows * self.cols
 
-    def __getitem__(self, pos: Position) -> str:
-        return self.grid[pos.i][pos.j]
+    def __getitem__(self, pos: complex) -> str:
+        return self.grid[int(pos.imag)][int(pos.real)]
 
-    def __setitem__(self, pos: Position, value: str) -> None:
-        self.grid[pos.i][pos.j] = value
+    def __setitem__(self, pos: complex, value: str) -> None:
+        self.grid[int(pos.imag)][int(pos.real)] = value
 
-    def in_bounds(self, pos: Position) -> bool:
+    def in_bounds(self, pos: complex) -> bool:
         return self[pos] != Obstacle.OOB.value
-        # return 0 <= pos.i < self.rows and 0 <= pos.j < self.cols
 
-    def display(self, player_pos: Optional[Position] = None, include_trail: bool = False) -> None:
+    def display(self, player_pos: Optional[complex] = None, include_trail: bool = False) -> None:
         trail = None
 
         if include_trail:
@@ -78,67 +48,56 @@ class Grid:
 
         for i, row in enumerate(self.grid):
             for j, cell in enumerate(row):
-                if player_pos is not None and Position(i, j) == player_pos:
+                if player_pos is not None and complex(j, i) == player_pos:
                     print('X', end='')
-                elif trail is not None and Position(i, j) in trail:
+                elif trail is not None and complex(j, i) in trail:
                     print('o', end='')
                 else:
                     print(cell, end='')
             print()
 
 
-class Direction(Enum):
-    NORTH = 0
-    EAST = 1
-    SOUTH = 2
-    WEST = 3
+NORTH = -1j
+EAST = 1
+SOUTH = 1j
+WEST = -1
 
-    @property
-    def vector(self) -> Position:
-        if self == Direction.NORTH:
-            return Position(-1, 0)
-        elif self == Direction.EAST:
-            return Position(0, 1)
-        elif self == Direction.SOUTH:
-            return Position(1, 0)
-        elif self == Direction.WEST:
-            return Position(0, -1)
+DIRECTIONS = [NORTH, EAST, SOUTH, WEST]
 
-    @classmethod
-    def cycle(cls, start_pos: Optional['Direction'] = None) -> Iterable['Direction']:
+def cycle_directions(start_pos: Optional[complex] = None) -> Iterable[complex]:
+    if start_pos is None:
+        start_pos = NORTH
 
-        if start_pos is None:
-            start_pos = cls.NORTH
-
-        while True:
-            yield start_pos
-            start_pos = cls((start_pos.value + 1) % 4)
+    while True:
+        yield start_pos
+        start_pos *= 1j
 
 @dataclass
 class Player:
-    position: MutablePosition
-    direction: Direction
+    position: complex
+    direction: DirectionType
 
-    _direction_cycle: Iterable[Direction] = field(init=False, repr=False)
+    _direction_cycle: Iterable[DirectionType] = field(init=False, repr=False)
 
     def __post_init__(self):
-        self._direction_cycle = iter(Direction.cycle(self.direction))
+        self._direction_cycle = iter(cycle_directions(self.direction))
         next(self._direction_cycle)
 
 
     @property
-    def next_position(self) -> Position:
-        return self.position + self.direction.vector
+    def next_position(self) -> complex:
+        return self.position + self.direction
 
     def move(self) -> None:
-        self.position += self.direction.vector
+        self.position += self.direction
 
-    def simulate(self, grid: Grid, additional_position: Optional[Position] = None) -> bool:
+    def simulate(self, grid: Grid, additional_position: Optional[complex] = None) -> bool:
         next_position = self.next_position
+        next_item = grid[next_position]
 
-        if grid.in_bounds(next_position):
+        if next_item != Obstacle.OOB.value:
 
-            if grid[next_position] == Obstacle.OBJECT.value or next_position == additional_position:
+            if next_item == Obstacle.OBJECT.value or next_position == additional_position:
                 self.direction = next(self._direction_cycle)
             else:
                 self.move()
@@ -146,8 +105,8 @@ class Player:
         return False
 
 
-def simulate_movement_trail(player_pos: Position, grid: Grid) -> dict[Position, tuple[Position, Direction]]:
-    direction_cycle = iter(Direction.cycle(Direction.NORTH))
+def simulate_movement_trail(player_pos: complex, grid: Grid) -> dict[complex, tuple[complex, DirectionType]]:
+    direction_cycle = iter(cycle_directions())
     player = Player(player_pos, direction=next(direction_cycle))
 
     prev_position = player.position
@@ -169,12 +128,12 @@ def pad_grid(grid: Grid) -> Grid:
 
     for i in range(rows):
         for j in range(cols):
-            new_grid[i + 1][j + 1] = grid[Position(i, j)]
+            new_grid[i + 1][j + 1] = grid[complex(j, i)]
 
     return Grid(new_grid)
 
 
-def read_input(input_file: Path) -> tuple[Position, Grid]:
+def read_input(input_file: Path) -> tuple[complex, Grid]:
     grid = []
     player_pos = None
 
@@ -185,7 +144,7 @@ def read_input(input_file: Path) -> tuple[Position, Grid]:
                 if c == '^':
                     if player_pos is not None:
                         raise ValueError('Multiple player positions found')
-                    player_pos = Position(i, j)
+                    player_pos = complex(j, i)
                     row.append(Obstacle.OPEN.value)
                 elif c in [Obstacle.OBJECT.value, Obstacle.OPEN.value]:
                     row.append(Obstacle(c).value)
@@ -199,7 +158,7 @@ def read_input(input_file: Path) -> tuple[Position, Grid]:
     grid = pad_grid(Grid(grid))
 
     # Adjust player position to account for padding
-    player_pos = Position(player_pos.i + 1, player_pos.j + 1)
+    player_pos += 1 + 1j
 
     return player_pos, grid
 
