@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from itertools import product
+from itertools import combinations
 
 from pathlib import Path
 
@@ -25,23 +25,22 @@ def calc_antinodes_from_positions(s1: Satellite, s2: Satellite, grid_shape: Grid
         node -= delta
 
 def find_antinodes_in_line(satellites: list[Satellite], grid_shape: GridShape) -> Iterable[complex]:
-    for s1, s2 in product(satellites, repeat=2):
-        if s1.position != s2.position:
-            antinodes = calc_antinodes_from_positions(s1, s2, grid_shape=grid_shape)
-            for a in antinodes:
-                yield a
+    for s1, s2 in combinations(satellites, 2):
+        antinodes = calc_antinodes_from_positions(s1, s2, grid_shape=grid_shape)
+        for a in antinodes:
+            yield a
 
 def solve(satellites: list[Satellite], grid_shape: GridShape) -> int:
 
     sat_map = group_by_frequency(satellites)
 
-    anti_nodes = {
+    antinodes = {
         antinode
         for _, sats in sat_map.items()
         for antinode in find_antinodes_in_line(sats, grid_shape=grid_shape)
     }
 
-    return len(anti_nodes)
+    return len(antinodes)
 
 
 def main():
